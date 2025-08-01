@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CTC CF AI知识库 - 人工智能助手</title>
+  <link rel="icon" href="/assets/icon.ico" type="image/x-icon"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link href="/vendor/fonts/inter/inter.css" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/fonts/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/vendor/css/highlight/default.min.css">
+  
+  <!-- 引入必要的JavaScript库 -->
+  <!-- 优化资源加载顺序 -->
+  <script src="/vendor/js/marked.min.js"></script>
+  <script src="/vendor/js/highlight/highlight.min.js" defer></script>
+  <script src="/vendor/js/highlight/languages/javascript.min.js" defer></script>
+  <script src="/vendor/js/highlight/languages/python.min.js" defer></script>
+  <script src="/vendor/js/highlight/languages/sql.min.js" defer></script>
+  <script src="/vendor/js/highlight/languages/bash.min.js" defer></script>
+  <script src="/vendor/js/highlight/languages/json.min.js" defer></script>
+  <script type="module" src="/static/js/app.js" defer></script>
+</head>
+<body>
+  <header class="top-bar">
+    <button class="menu-btn" id="menuBtn">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="title">
+      <img src="/assets/icon.ico" alt="Logo" class="logo">
+      <span>CTC CF AI知识库</span>
+    </div>
+    <button class="new-chat-btn" id="newChatBtn">
+      <i class="fas fa-plus"></i> 新建会话
+    </button>
+  </header>
+  
+  <!-- 侧边抽屉 -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchHistory" placeholder="搜索会话..." />
+      </div>
+      <button class="export-btn" id="exportBtn">
+        <i class="fas fa-download"></i> 导出记录
+      </button>
+    </div>
+    <ul id="historyList"></ul>
+  </aside>
+  
+  <div class="overlay" id="overlay"></div>
+  
+  <main class="chat-container">
+    <div class="chat-body" id="chatBody">
+      <div class="welcome-message">
+        <img src="/assets/avatar-big.png" alt="AI Avatar" class="welcome-avatar">
+        <h2>欢迎使用CF AI知识库</h2>
+        <p>我可以帮助您解答各种问题，请随时提问！</p>
+        <div class="suggestions">
+          <div class="suggestion" data-suggestion="CF 厂长是谁，他的具体信息？">CF 厂长是谁，他的具体信息？</div>
+          <div class="suggestion" data-suggestion="我是一名Repair站点新人，该如何规划学习线路？">我是一名Repair站点新人，该如何规划学习线路？</div>
+          <div class="suggestion" data-suggestion="BM1 Common Defect白缺陷异常原因有哪些，如何改善？">BM1 Common Defect异常原因有哪些，如何改善？</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="chat-input-area">
+      <div class="input-container">
+        <textarea id="chatInput" placeholder="输入你的问题..." rows="1"></textarea>
+        <button id="sendBtn" class="send-btn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+      <div class="input-footer">
+        <label class="deep-thinking-toggle">
+          <input type="checkbox" id="deepThinkingToggle">
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">深度思考</span>
+        </label>
+        <small>CF AI知识库 <v1 class="0 0"></v1> · 基于RAGFlow技术 · 路武雷</small>
+      </div>
+    </div>
+  </main>
+  
+</body>
+</html>

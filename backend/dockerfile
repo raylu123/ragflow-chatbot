@@ -1,0 +1,39 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# 配置pip使用国内镜像源
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 设置环境变量确保UTF-8编码
+ENV PYTHONIOENCODING=utf-8
+ENV PYTHONUNBUFFERED=1
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    gcc \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制requirements.txt先安装依赖（如果存在）
+COPY backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt || echo "No requirements.txt found"
+
+# 复制应用代码
+COPY backend/ ./backend/
+COPY frontend/ ./frontend/
+COPY README.md .env chat_history.db* ./
+
+# 创建日志目录
+RUN mkdir -p /var/log/app
+
+# 安装Python依赖（使用requirements.txt就够了，不需要重复安装）
+# RUN pip install --no-cache-dir fastapi uvicorn python-dotenv sqlalchemy openai httpx
+
+EXPOSE 8000
+
+# 添加健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]

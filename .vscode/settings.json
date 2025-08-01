@@ -1,0 +1,18 @@
+{
+    // 启用自动 linting
+    "python.linting.enabled": true,
+    // 选择要使用的 linter（根据安装情况选择）
+    "python.linting.pylintEnabled": true,
+    // "python.linting.flake8Enabled": true,
+    // "python.linting.mypyEnabled": true,
+    
+    // 保存时自动运行 linting
+    "python.linting.lintOnSave": true,
+    // 实时 linting（在输入时检查）
+    "python.linting.autoFixOnSave": true,
+    
+    // 配置错误提示级别
+    "python.linting.pylintArgs": [
+        "--disable=W0611"  // 示例：禁用特定警告
+    ]
+}
