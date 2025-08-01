@@ -225,7 +225,7 @@ docker-compose logs nginx
 
 
 ## 联系方式
-项目维护者：路武雷
+项目维护者：raylu123
 
 
 ## 鸣谢
