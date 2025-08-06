@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from .rag_client import RagflowClient
-from .models import SessionLocal, ChatMessage
+from .models import SessionLocal, ChatMessage, Base, engine
 from .crud import (
     create_chat_session, save_chat_message, get_chat_sessions, 
     delete_chat_session, export_chats, delete_all_chat_sessions,
@@ -66,7 +66,9 @@ load_dotenv()
 # 初始化RAG客户端
 rag = RagflowClient()
 
-app = FastAPI()
+app = FastAPI(title="RAGFlow Chatbot API", 
+              description="基于RAGFlow的聊天机器人API服务",
+              version="1.0.0")
 
 # 挂载静态文件目录
 app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..", "frontend", "static")), name="static")
@@ -86,6 +88,10 @@ app.add_middleware(
 
 # 依赖注入数据库会话
 def get_db():
+    """
+    数据库会话依赖注入
+    确保每个请求结束后正确关闭数据库连接
+    """
     db = SessionLocal()
     try:
         yield db
@@ -94,8 +100,18 @@ def get_db():
 
 @app.on_event("startup")
 async def startup_event():
-    """应用启动时的预热任务"""
+    """
+    应用启动时的预热任务
+    包括数据库表创建、数据库连接预热和RAG客户端预热
+    """
     logger.info("应用正在启动...")
+
+    # 自动创建数据库表
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("数据库表创建检查完成")
+    except Exception as e:
+        logger.error(f"数据库表创建失败: {e}")
     
     # 预热数据库连接
     db = SessionLocal()
@@ -105,6 +121,12 @@ async def startup_event():
         logger.info("数据库连接预热完成")
     except Exception as e:
         logger.error(f"数据库预热失败: {e}")
+        # 尝试重新创建表
+        try:
+            Base.metadata.create_all(bind=engine)
+            logger.info("尝试重新创建数据库表成功")
+        except Exception as e2:
+            logger.error(f"重新创建数据库表也失败: {e2}")
     finally:
         db.close()
     
@@ -125,7 +147,10 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """应用关闭时的清理任务"""
+    """
+    应用关闭时的清理任务
+    关闭所有打开的客户端连接
+    """
     logger.info("应用正在关闭...")
     if rag.client:
         rag.client.close()
@@ -133,19 +158,35 @@ async def shutdown_event():
         await rag.async_client.close()
     logger.info("应用关闭完成")
 
-@app.get("/health")
+@app.get("/health", 
+         summary="健康检查",
+         description="检查服务健康状态，包括数据库和RAG服务")
 async def health_check():
     """健康检查端点"""
     db_healthy = False
     rag_healthy = False
+    db_details = {}
     
     # 检查数据库连接
+    from .models import SessionLocal, ChatMessage
     db = SessionLocal()
     try:
         db.query(ChatMessage).first()
         db_healthy = True
+        db_details["status"] = "connected"
     except Exception as e:
         logger.error(f"数据库健康检查失败: {e}")
+        db_details["status"] = "disconnected"
+        db_details["error"] = str(e)
+        # 尝试重新创建表
+        try:
+            from .models import create_tables
+            if create_tables():
+                db_details["recreate_tables"] = "success"
+            else:
+                db_details["recreate_tables"] = "failed"
+        except Exception as e2:
+            db_details["recreate_error"] = str(e2)
     finally:
         db.close()
     
@@ -159,22 +200,27 @@ async def health_check():
     else:
         rag_healthy = False
     
-    if db_healthy and rag_healthy:
-        return {"status": "healthy", "database": "ok", "rag_service": "ok"}
-    else:
-        return JSONResponse(
-            status_code=503,
-            content={
-                "status": "unhealthy", 
-                "database": "ok" if db_healthy else "error",
-                "rag_service": "ok" if rag_healthy else "error"
-            }
-        )
-
+    status_code = 200 if (db_healthy and rag_healthy) else 503
+    
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "status": "healthy" if (db_healthy and rag_healthy) else "unhealthy", 
+            "database": {
+                "status": "ok" if db_healthy else "error",
+                "details": db_details
+            },
+            "rag_service": "ok" if rag_healthy else "error"
+        }
+    )
 
 # 根路径路由，返回前端页面
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
+    """
+    根路径路由，返回前端页面
+    如果找不到前端文件则返回默认欢迎页面
+    """
     # 读取前端HTML文件
     frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "templates", "index.html")
     try:
@@ -182,19 +228,29 @@ async def read_root():
             html_content = file.read()
         return HTMLResponse(content=html_content, status_code=200)
     except FileNotFoundError:
+        logger.warning("前端文件未找到，返回默认页面")
         return HTMLResponse(content="<h1>Welcome to RAGFlow Chatbot</h1><p>Frontend files not found.</p>", status_code=200)
 
 class ChatRequest(BaseModel):
+    """
+    聊天请求模型
+    """
     message: str
     deep_thinking: bool = False
 
 class SaveChatRequest(BaseModel):
+    """
+    保存聊天记录请求模型
+    """
     question: str
     answer: str
     thinking_content: Optional[str] = None
 
 @app.get("/chat")
 async def chat_sse(message: str, deep_thinking: bool = False, db: Session = Depends(get_db)):
+    """
+    聊天接口，支持SSE流式响应
+    """
     if not rag:
         def error_stream():
             yield f"data: {json.dumps({'type':'error','message':'RAG client not configured properly. Check environment variables.'})}\n\n"
@@ -252,17 +308,24 @@ async def chat_sse(message: str, deep_thinking: bool = False, db: Session = Depe
                 # 发送最终完成信号
                 yield f"data: [DONE]\n\n"
             except Exception as e:
+                logger.error(f"处理聊天流时发生错误: {str(e)}", exc_info=True)
                 yield f"data: {json.dumps({'type':'error','message':str(e)})}\n\n"
                 yield f"data: [DONE]\n\n"
 
         return StreamingResponse(event_stream(), media_type="text/event-stream")
     except Exception as e:
+        logger.error(f"处理聊天请求时发生错误: {str(e)}", exc_info=True)
         def error_stream():
             yield f"data: {json.dumps({'type':'error','message':str(e)})}\n\n"
             yield f"data: [DONE]\n\n"
         return StreamingResponse(error_stream(), media_type="text/event-stream")
+
 @app.get("/history")
 def history_endpoint(db: Session = Depends(get_db), q: str = Query(None), page: int = Query(1, ge=1), page_size: int = Query(10, ge=1, le=50)):
+    """
+    获取聊天历史记录列表
+    支持关键词搜索和分页
+    """
     sessions = get_chat_sessions(db, keyword=q, page=page, page_size=page_size)
     # 转换为上海时区
     import pytz
@@ -287,60 +350,95 @@ def history_endpoint(db: Session = Depends(get_db), q: str = Query(None), page: 
 
 @app.post("/history")
 def save_chat_endpoint(chat: SaveChatRequest, db: Session = Depends(get_db)):
-    # 创建新的聊天会话
-    session = create_chat_session(db, title=chat.question[:50])
-    
-    # 保存用户消息
-    save_chat_message(db, session.id, "user", chat.question)
-    
-    # 保存助手回复
-    save_chat_message(db, session.id, "assistant", chat.answer, chat.thinking_content)
-    
-    return {"ok": True, "session_id": session.session_id}
+    """
+    保存聊天记录
+    """
+    try:
+        # 创建新的聊天会话
+        session = create_chat_session(db, title=chat.question[:50])
+        
+        # 保存用户消息
+        save_chat_message(db, session.id, "user", chat.question)
+        
+        # 保存助手回复
+        save_chat_message(db, session.id, "assistant", chat.answer, chat.thinking_content)
+        
+        return {"ok": True, "session_id": session.session_id}
+    except Exception as e:
+        logger.error(f"保存聊天记录时发生错误: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="保存聊天记录失败")
 
 @app.get("/history/{session_uuid}")
 def get_chat_history_endpoint(session_uuid: str, db: Session = Depends(get_db)):
-    # 根据UUID获取会话
-    session = get_chat_session_by_uuid(db, session_uuid)
-    if not session:
-        return JSONResponse(status_code=404, content={"message": "Chat session not found"})
-    
-    # 获取会话中的所有消息
-    messages = get_chat_messages_by_session_uuid(db, session_uuid)
-    if messages is None:
-        return JSONResponse(status_code=404, content={"message": "Chat session not found"})
-    
-    # 转换为上海时区
-    import pytz
-    shanghai_tz = pytz.timezone('Asia/Shanghai')
-    
-    result_messages = []
-    for message in messages:
-        local_timestamp = message.timestamp.replace(tzinfo=pytz.utc).astimezone(shanghai_tz)
-        result_messages.append({
-            "role": message.role,
-            "content": message.content,
-            "thinking_content": message.thinking_content,
-            "timestamp": local_timestamp.isoformat()
-        })
-    
-    return {"messages": result_messages, "session_id": session.session_id, "title": session.title}
+    """
+    根据会话UUID获取聊天历史记录
+    """
+    try:
+        # 根据UUID获取会话
+        session = get_chat_session_by_uuid(db, session_uuid)
+        if not session:
+            return JSONResponse(status_code=404, content={"message": "Chat session not found"})
+        
+        # 获取会话中的所有消息
+        messages = get_chat_messages_by_session_uuid(db, session_uuid)
+        if messages is None:
+            return JSONResponse(status_code=404, content={"message": "Chat session not found"})
+        
+        # 转换为上海时区
+        import pytz
+        shanghai_tz = pytz.timezone('Asia/Shanghai')
+        
+        result_messages = []
+        for message in messages:
+            local_timestamp = message.timestamp.replace(tzinfo=pytz.utc).astimezone(shanghai_tz)
+            result_messages.append({
+                "role": message.role,
+                "content": message.content,
+                "thinking_content": message.thinking_content,
+                "timestamp": local_timestamp.isoformat()
+            })
+        
+        return {"messages": result_messages, "session_id": session.session_id, "title": session.title}
+    except Exception as e:
+        logger.error(f"获取聊天历史记录时发生错误: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="获取聊天历史记录失败")
 
 @app.delete("/history/{session_id}")
 def delete_endpoint(session_id: int, db: Session = Depends(get_db)):
-    delete_chat_session(db, session_id)
-    return {"ok": True}
+    """
+    删除指定的聊天会话
+    """
+    try:
+        delete_chat_session(db, session_id)
+        return {"ok": True}
+    except Exception as e:
+        logger.error(f"删除聊天会话时发生错误: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="删除聊天会话失败")
 
 @app.delete("/history")
 def delete_all_endpoint(db: Session = Depends(get_db)):
-    delete_all_chat_sessions(db)
-    return {"ok": True}
+    """
+    删除所有聊天会话
+    """
+    try:
+        delete_all_chat_sessions(db)
+        return {"ok": True}
+    except Exception as e:
+        logger.error(f"删除所有聊天会话时发生错误: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="删除所有聊天会话失败")
 
 @app.get("/export")
 def export_endpoint(db: Session = Depends(get_db)):
-    csv_data = export_chats(db)
-    headers = {
-        'Content-Disposition': 'attachment; filename="chat_history.csv"',
-        'Content-Type': 'text/csv; charset=utf-8',
-    }
-    return Response(content=csv_data, headers=headers)
+    """
+    导出所有聊天记录为CSV格式
+    """
+    try:
+        csv_data = export_chats(db)
+        headers = {
+            'Content-Disposition': 'attachment; filename="chat_history.csv"',
+            'Content-Type': 'text/csv; charset=utf-8',
+        }
+        return Response(content=csv_data, headers=headers)
+    except Exception as e:
+        logger.error(f"导出聊天记录时发生错误: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="导出聊天记录失败")

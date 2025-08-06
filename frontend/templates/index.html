@@ -11,6 +11,18 @@
   <link rel="stylesheet" href="/vendor/css/highlight/default.min.css">
   
   <!-- 引入必要的JavaScript库 -->
+  <script>
+    // 为旧版本NW.js提供Array.prototype.at方法支持
+    if (!Array.prototype.at) {
+      Array.prototype.at = function(index) {
+        if (index >= 0) {
+          return this[index];
+        } else {
+          return this[this.length + index];
+        }
+      };
+    }
+  </script>
   <!-- 优化资源加载顺序 -->
   <script src="/vendor/js/marked.min.js"></script>
   <script src="/vendor/js/highlight/highlight.min.js" defer></script>

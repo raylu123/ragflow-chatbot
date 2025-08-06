@@ -1,0 +1,9 @@
+2025-08-01 19:39:19,524 - backend.main - INFO - 应用正在启动...
+2025-08-01 19:39:19,530 - backend.main - INFO - 数据库连接预热完成
+2025-08-01 19:39:49,202 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
+2025-08-01 19:39:49,205 - backend.main - INFO - RAG客户端预热完成
+2025-08-01 19:39:49,206 - backend.main - INFO - 应用启动完成
+2025-08-01 19:41:09,425 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
+2025-08-01 19:41:35,558 - backend.rag_client - INFO - RAGFlow响应完成，chunk数: 95，耗时: 26.12秒
+2025-08-01 20:07:51,530 - backend.main - INFO - 应用正在关闭...
+2025-08-01 20:07:51,530 - backend.main - INFO - 应用关闭完成

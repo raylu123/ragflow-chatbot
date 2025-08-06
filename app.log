@@ -1,9 +1,88 @@
-2025-08-01 19:39:19,524 - backend.main - INFO - 应用正在启动...
-2025-08-01 19:39:19,530 - backend.main - INFO - 数据库连接预热完成
-2025-08-01 19:39:49,202 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
-2025-08-01 19:39:49,205 - backend.main - INFO - RAG客户端预热完成
-2025-08-01 19:39:49,206 - backend.main - INFO - 应用启动完成
-2025-08-01 19:41:09,425 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
-2025-08-01 19:41:35,558 - backend.rag_client - INFO - RAGFlow响应完成，chunk数: 95，耗时: 26.12秒
-2025-08-01 20:07:51,530 - backend.main - INFO - 应用正在关闭...
-2025-08-01 20:07:51,530 - backend.main - INFO - 应用关闭完成
+2025-08-06 08:30:47,368 - backend.main - INFO - 应用正在启动...
+2025-08-06 08:30:47,369 - backend.models - ERROR - 数据库表创建失败: (sqlite3.OperationalError) unable to open database file
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-06 08:30:47,369 - backend.main - WARNING - 数据库表创建失败，但继续启动应用
+2025-08-06 08:30:47,376 - backend.main - ERROR - 数据库预热失败: (sqlite3.OperationalError) unable to open database file
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-06 08:30:47,376 - backend.models - ERROR - 数据库表创建失败: (sqlite3.OperationalError) unable to open database file
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-08-06 08:30:47,377 - backend.main - ERROR - 尝试重新创建数据库表失败
+2025-08-06 08:31:23,193 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
+2025-08-06 08:31:24,147 - backend.main - INFO - RAG客户端预热完成
+2025-08-06 08:31:24,147 - backend.main - INFO - 应用启动完成
+2025-08-06 08:31:24,147 - backend.main - INFO - 应用正在启动...
+2025-08-06 08:31:24,198 - backend.main - INFO - 数据库表创建检查完成
+2025-08-06 08:31:24,202 - backend.main - INFO - 数据库连接预热完成
+2025-08-06 08:32:19,235 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
+2025-08-06 08:32:19,236 - backend.main - INFO - RAG客户端预热完成
+2025-08-06 08:32:19,236 - backend.main - INFO - 应用启动完成
+2025-08-06 08:32:19,243 - backend.main - INFO - 应用正在关闭...
+2025-08-06 08:32:19,248 - backend.main - INFO - 应用关闭完成
+2025-08-06 08:33:21,425 - backend.main - INFO - 应用正在启动...
+2025-08-06 08:33:21,426 - backend.models - INFO - 数据库表创建成功
+2025-08-06 08:33:21,432 - backend.main - INFO - 数据库连接预热完成
+2025-08-06 08:34:20,229 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
+2025-08-06 08:34:53,652 - backend.main - INFO - RAG客户端预热完成
+2025-08-06 08:34:53,652 - backend.main - INFO - 应用启动完成
+2025-08-06 08:34:53,652 - backend.main - INFO - 应用正在启动...
+2025-08-06 08:34:53,652 - backend.main - INFO - 数据库表创建检查完成
+2025-08-06 08:34:53,654 - backend.main - INFO - 数据库连接预热完成
+2025-08-06 08:36:11,510 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
+2025-08-06 08:36:11,512 - backend.main - INFO - RAG客户端预热完成
+2025-08-06 08:36:11,512 - backend.main - INFO - 应用启动完成
+2025-08-06 08:39:02,537 - backend.main - INFO - 应用正在关闭...
+2025-08-06 08:39:02,547 - backend.main - INFO - 应用关闭完成
+2025-08-06 08:39:04,160 - backend.main - INFO - 应用正在启动...
+2025-08-06 08:39:04,161 - backend.main - INFO - 数据库表创建检查完成
+2025-08-06 08:39:04,166 - backend.main - INFO - 数据库连接预热完成
+2025-08-06 08:39:58,457 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
+2025-08-06 08:39:58,460 - backend.main - INFO - RAG客户端预热完成
+2025-08-06 08:39:58,461 - backend.main - INFO - 应用启动完成
+2025-08-06 08:39:58,461 - backend.main - INFO - 应用正在关闭...
+2025-08-06 08:39:58,465 - backend.main - INFO - 应用关闭完成
+2025-08-06 08:40:00,212 - backend.rag_client - INFO - RAGFlow客户端初始化成功
+2025-08-06 08:40:00,219 - backend.main - INFO - 应用正在启动...
+2025-08-06 08:40:00,221 - backend.main - INFO - 数据库表创建检查完成
+2025-08-06 08:40:00,227 - backend.main - INFO - 数据库连接预热完成
+2025-08-06 08:41:07,817 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
+2025-08-06 08:41:08,203 - backend.main - INFO - RAG客户端预热完成
+2025-08-06 08:41:08,203 - backend.main - INFO - 应用启动完成
+2025-08-06 08:41:08,204 - backend.main - INFO - 应用正在关闭...
+2025-08-06 08:41:08,209 - backend.main - INFO - 应用关闭完成
+2025-08-06 08:41:09,629 - backend.rag_client - INFO - RAGFlow客户端初始化成功
+2025-08-06 08:41:09,636 - backend.main - INFO - 应用正在启动...
+2025-08-06 08:41:09,637 - backend.main - INFO - 数据库表创建检查完成
+2025-08-06 08:41:09,643 - backend.main - INFO - 数据库连接预热完成
+2025-08-06 08:42:43,863 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
+2025-08-06 08:43:34,525 - backend.main - INFO - RAG客户端预热完成
+2025-08-06 08:43:34,525 - backend.main - INFO - 应用启动完成
+2025-08-06 08:43:34,527 - backend.main - INFO - 应用正在关闭...
+2025-08-06 08:43:34,532 - backend.main - INFO - 应用关闭完成
+2025-08-06 08:43:36,223 - backend.rag_client - INFO - RAGFlow客户端初始化成功
+2025-08-06 08:43:36,231 - backend.main - INFO - 应用正在启动...
+2025-08-06 08:43:36,231 - backend.main - INFO - 数据库表创建检查完成
+2025-08-06 08:43:36,238 - backend.main - INFO - 数据库连接预热完成
+2025-08-06 08:44:22,449 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
+2025-08-06 08:44:57,442 - backend.main - INFO - RAG客户端预热完成
+2025-08-06 08:44:57,443 - backend.main - INFO - 应用启动完成
+2025-08-06 08:44:57,444 - backend.main - INFO - 应用正在关闭...
+2025-08-06 08:44:57,448 - backend.main - INFO - 应用关闭完成
+2025-08-06 08:45:44,128 - backend.rag_client - INFO - RAGFlow客户端初始化成功
+2025-08-06 08:45:44,134 - backend.main - INFO - 应用正在启动...
+2025-08-06 08:45:44,135 - backend.main - INFO - 数据库表创建检查完成
+2025-08-06 08:45:44,141 - backend.main - INFO - 数据库连接预热完成
+2025-08-06 08:46:44,258 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
+2025-08-06 08:46:44,261 - backend.main - INFO - RAG客户端预热完成
+2025-08-06 08:46:44,262 - backend.main - INFO - 应用启动完成
+2025-08-06 08:47:31,384 - backend.crud - INFO - 创建新的聊天会话: 46e2de98-f97f-48b3-ba8d-68c970662e17
+2025-08-06 08:47:31,396 - backend.crud - INFO - 保存聊天消息到会话 1
+2025-08-06 08:48:20,901 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
+2025-08-06 08:48:51,959 - backend.rag_client - INFO - RAGFlow响应完成，chunk数: 110，耗时: 31.06秒
+2025-08-06 08:48:51,971 - backend.crud - INFO - 保存聊天消息到会话 1
+2025-08-06 08:51:54,445 - backend.crud - INFO - 创建新的聊天会话: b5547708-d21c-416c-bd15-4d55f7ee8f75
+2025-08-06 08:51:54,454 - backend.crud - INFO - 保存聊天消息到会话 2
+2025-08-06 08:52:42,020 - httpx - INFO - HTTP Request: POST http://192.168.1.200/api/v1/chats_openai/61db2c1c620d11f091cc76b80752d1f7/chat/completions "HTTP/1.1 200 OK"
+2025-08-06 08:53:06,113 - backend.rag_client - INFO - RAGFlow响应完成，chunk数: 82，耗时: 24.09秒
+2025-08-06 08:53:06,124 - backend.crud - INFO - 保存聊天消息到会话 2
+2025-08-06 08:53:16,238 - backend.main - INFO - 应用正在关闭...
+2025-08-06 08:53:16,238 - backend.main - INFO - 应用关闭完成

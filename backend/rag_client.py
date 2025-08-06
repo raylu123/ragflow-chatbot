@@ -10,11 +10,19 @@ import time
 logger = logging.getLogger(__name__)
 
 class RagflowClient:
+    """
+    RAGFlow客户端类
+    负责与RAGFlow服务进行通信
+    """
     def __init__(self):
+        """
+        初始化RAGFlow客户端
+        从环境变量中获取配置信息
+        """
         self.api_key = os.getenv("RAGFLOW_API_KEY")
         self.chat_id = os.getenv("RAGFLOW_CHAT_ID")
         base = os.getenv("RAGFLOW_BASE_URL")
-        self.base_url = f"{base}/api/v1/chats_openai/{self.chat_id}"
+        self.base_url = f"{base}/api/v1/chats_openai/{self.chat_id}" if base and self.chat_id else None
         self.client = None
         self.async_client = None
         self.is_initialized = False
@@ -25,9 +33,13 @@ class RagflowClient:
         self._initialize_client()
 
     def _initialize_client(self):
-        """初始化客户端"""
+        """
+        初始化客户端
+        创建同步和异步客户端实例
+        """
         try:
             if not all([self.api_key, self.base_url, self.chat_id]):
+                logger.warning("RAGFLOW配置不完整，缺少必要配置项")
                 raise ValueError("RAGFLOW_API_KEY, RAGFLOW_BASE_URL, RAGFLOW_CHAT_ID must be set")
                 
             self.client = OpenAI(
@@ -53,6 +65,7 @@ class RagflowClient:
             )
             
             self.is_initialized = True
+            logger.info("RAGFlow客户端初始化成功")
         except Exception as e:
             logger.error(f"RAGFlow客户端初始化失败: {str(e)}")
             self.client = None
@@ -62,6 +75,9 @@ class RagflowClient:
     def chat(self, message: str, stream: bool = True, reasoning_effort: Optional[str] = "low"):
         """
         同步聊天方法
+        :param message: 用户消息
+        :param stream: 是否流式输出
+        :param reasoning_effort: 推理努力程度 ("low", "medium", "high")
         """
         system_prompt = """# LCD彩膜制造专家
 您是LCD彩膜厂首席工程师，精通：
@@ -75,23 +91,33 @@ class RagflowClient:
         {{knowledge}}
         以上是知识库。"""
 
-        return self.client.chat.completions.create(
-            model="ragflow",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": message}
-            ],
-            stream=stream,
-            timeout=300,  # 减少超时时间
-            max_tokens=2048*4,  # 增加最大token数
-            temperature=0.7,
-            reasoning_effort=reasoning_effort,
-            stream_options={"include_usage": False} if stream else None
-        )
+        if not self.client:
+            logger.error("RAGFlow客户端未正确初始化")
+            raise RuntimeError("RAGFlow客户端未正确初始化")
+
+        try:
+            return self.client.chat.completions.create(
+                model="ragflow",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": message}
+                ],
+                stream=stream,
+                timeout=300,  # 减少超时时间
+                max_tokens=2048*4,  # 增加最大token数
+                temperature=0.7,
+                reasoning_effort=reasoning_effort,
+                stream_options={"include_usage": False} if stream else None
+            )
+        except Exception as e:
+            logger.error(f"RAGFlow聊天请求失败: {str(e)}")
+            raise
 
     async def async_chat(self, messages: List[Dict[str, str]], reasoning_effort: str = "low") -> AsyncGenerator[Dict[str, Any], None]:
         """
         异步聊天方法，支持流式输出思考内容和分阶段思考过程
+        :param messages: 消息列表
+        :param reasoning_effort: 推理努力程度 ("low", "medium", "high")
         """
         # 如果客户端初始化失败或配置不完整，使用Mock响应
         if not self.async_client or not self.is_initialized:
@@ -127,7 +153,7 @@ class RagflowClient:
                     messages=openai_messages,
                     stream=True,
                     max_tokens=2048*4,
-                    timeout=300,  # 减少超时时间到120秒
+                    timeout=300,  # 超时时间到3000秒
                     temperature=0.7,
                     reasoning_effort=reasoning_effort,  # 使用传入的参数
                     stream_options={"include_usage": False}
@@ -209,7 +235,11 @@ class RagflowClient:
                     await asyncio.sleep(0.5)  # 减少等待时间
 
     async def health_check(self, timeout: int = 30) -> bool:
-        """检查RAGFlow服务健康状态"""
+        """
+        检查RAGFlow服务健康状态
+        :param timeout: 超时时间（秒）
+        :return: 服务是否健康
+        """
         try:
             # 如果配置不完整，返回False
             if not all([self.api_key, self.base_url, self.chat_id]):
@@ -263,7 +293,9 @@ class RagflowClient:
             return False
 
     async def _mock_stream_response(self):
-        """Mock响应流"""
+        """
+        Mock响应流，用于服务不可用时的备用响应
+        """
         mock_responses = [
             {"type": "content", "content": "当前服务不可用，请稍后重试。"},
             {"type": "content", "content": "如果问题持续存在，请联系系统管理员。"},
@@ -274,7 +306,9 @@ class RagflowClient:
             yield response
 
     async def close(self):
-        """关闭异步客户端"""
+        """
+        关闭异步客户端
+        """
         if self.async_client and hasattr(self.async_client, '_client'):
             try:
                 await self.async_client._client.aclose()

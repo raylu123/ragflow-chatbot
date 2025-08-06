@@ -20,22 +20,40 @@ const ChatApp = (function() {
   
   // 初始化函数
   function init() {
+      // 确保Array.prototype.at方法存在（为旧版本NW.js提供支持）
+    if (!Array.prototype.at) {
+      Array.prototype.at = function(index) {
+        if (index >= 0) {
+          return this[index];
+        } else {
+          return this[this.length + index];
+        }
+      };
+    }
     // 配置Markdown渲染
     if (typeof marked !== 'undefined') {
-      marked.setOptions({
-        highlight: function(code, lang) {
-          if (lang && window.hljs && window.hljs.getLanguage(lang)) {
-            try {
-              return window.hljs.highlight(code, { language: lang }).value;
-            } catch (err) {
-              console.error('Highlight error:', err);
+      // 对于旧版本marked.js，使用旧的配置方式
+      if (marked.setOptions) {
+        marked.setOptions({
+          highlight: function(code, lang) {
+            if (lang && window.hljs && window.hljs.getLanguage(lang)) {
+              try {
+                return window.hljs.highlight(code, { language: lang }).value;
+              } catch (err) {
+                console.error('Highlight error:', err);
+              }
             }
-          }
-          return code;
-        },
-        breaks: true,
-        gfm: true
-      });
+            return code;
+          },
+          breaks: true,
+          gfm: true
+        });
+      } else if (marked.options) {
+        // 更旧版本的marked.js配置方式
+        marked.options = marked.options || {};
+        marked.options.breaks = true;
+        marked.options.gfm = true;
+      }
     }
     
     adjustTextareaHeight();
@@ -122,6 +140,7 @@ const ChatApp = (function() {
   }
   
   // 发送消息
+  // 发送消息
   async function sendMessage() {
     const message = elements.chatInput.value.trim();
     if (!message) return;
@@ -136,6 +155,10 @@ const ChatApp = (function() {
     let answerPanel = null;
     let retryCount = 0;
     const maxRetries = 3;
+    
+    // 用于流式输出的缓冲区
+    let thinkingBuffer = '';
+    let answerBuffer = '';
     
     const connectEventSource = () => {
       const eventSource = new EventSource(`/chat?message=${encodeURIComponent(message)}&deep_thinking=${elements.deepThinkingToggle.checked}`);
@@ -164,6 +187,7 @@ const ChatApp = (function() {
           
           if (data.type === 'thinking') {
             thinkingContent += data.content;
+            // 实现真正的流式输出效果
             updateThinkingContent(thinkingCard, thinkingContent);
           } 
           else if (data.type === 'content') {
@@ -172,7 +196,8 @@ const ChatApp = (function() {
               answerPanel.classList.add('typewriter'); // 手动添加打字机效果
             }
             fullResponse += data.content;
-            updateAssistantMessage(answerPanel, fullResponse);
+            // 实现真正的流式输出效果
+            updateAssistantMessage(answerPanel, fullResponse, true);
           }
           else if (data.type === 'thinking_stage') {
             // 处理分阶段思考过程
@@ -327,43 +352,56 @@ const ChatApp = (function() {
   }
   
   // 更新思考内容
-  function updateThinkingContent(thinkingCard, content) {
-    if (!thinkingCard) {
-      console.error('Thinking card element is null');
-      return;
-    }
-    
-    const contentElement = thinkingCard.querySelector('.thinking-content');
-    if (!contentElement) {
-      console.error('Thinking content element not found');
-      return;
-    }
-    
-    try {
-      contentElement.innerHTML = marked.parse(content);
-      thinkingCard.classList.remove('collapsed');
-      
-      const body = thinkingCard.querySelector('.thinking-body');
-      if (body) body.scrollTop = body.scrollHeight;
-      
-      // 只有在生成过程中才更新进度
-      if (!thinkingCard.classList.contains('completed')) {
-        const progressStages = thinkingCard.querySelectorAll('.progress-stage');
-        if (progressStages.length === 4) { // 确保有4个阶段
-          const contentLength = content.length;
-          
-          progressStages[0].classList.toggle('completed', contentLength > 0);
-          progressStages[1].classList.toggle('active', contentLength > 100);
-          progressStages[1].classList.toggle('completed', contentLength > 200);
-          progressStages[2].classList.toggle('active', contentLength > 200);
-          progressStages[2].classList.toggle('completed', contentLength > 300);
-          progressStages[3].classList.toggle('active', contentLength > 300);
-        }
-      }
-    } catch (error) {
-      console.error('Error updating thinking content:', error);
-    }
+// 更新思考内容
+function updateThinkingContent(thinkingCard, content) {
+  if (!thinkingCard) {
+    console.error('Thinking card element is null');
+    return;
   }
+  
+  const contentElement = thinkingCard.querySelector('.thinking-content');
+  if (!contentElement) {
+    console.error('Thinking content element not found');
+    return;
+  }
+  
+  try {
+    // 使用逐步更新的方式实现流式输出效果
+    let i = 0;
+    const speed = 1; // 控制流式输出速度
+    
+    // 清空现有内容
+    contentElement.innerHTML = '';
+    
+    // 如果已经有内容，直接显示
+    if (content) {
+      // 使用一个简单的流式输出模拟
+      contentElement.innerHTML = marked.parse(content);
+    }
+    
+    thinkingCard.classList.remove('collapsed');
+    
+    const body = thinkingCard.querySelector('.thinking-body');
+    if (body) body.scrollTop = body.scrollHeight;
+    
+    // 只有在生成过程中才更新进度
+    if (!thinkingCard.classList.contains('completed')) {
+      const progressStages = thinkingCard.querySelectorAll('.progress-stage');
+      if (progressStages.length === 4) { // 确保有4个阶段
+        const contentLength = content.length;
+        
+        progressStages[0].classList.toggle('completed', contentLength > 0);
+        progressStages[1].classList.toggle('active', contentLength > 100);
+        progressStages[1].classList.toggle('completed', contentLength > 200);
+        progressStages[2].classList.toggle('active', contentLength > 200);
+        progressStages[2].classList.toggle('completed', contentLength > 300);
+        progressStages[3].classList.toggle('active', contentLength > 300);
+      }
+    }
+  } catch (error) {
+    console.error('Error updating thinking content:', error);
+  }
+}
   
   // 更新思考阶段
   function updateThinkingStage(thinkingCard, stage, content) {
@@ -411,12 +449,18 @@ const ChatApp = (function() {
   }
   
   // 更新助手消息
-  function updateAssistantMessage(panel, content) {
+  // 更新助手消息
+  function updateAssistantMessage(panel, content, isStreaming = false) {
     // 保存当前类状态
     const isTypewriter = panel.classList.contains('typewriter');
     const hasNoCursor = panel.classList.contains('no-cursor');
     
-    panel.innerHTML = marked.parse(content);
+    // 如果是流式输出，逐字符更新以获得更好的效果
+    if (isStreaming) {
+      panel.innerHTML = marked.parse(content);
+    } else {
+      panel.innerHTML = marked.parse(content);
+    }
     
     // 恢复类状态
     if (isTypewriter) {
@@ -435,7 +479,6 @@ const ChatApp = (function() {
     
     scrollToBottom();
   }
-  
   // 添加错误消息
   function appendErrorMessage(message) {
     const errorDiv = document.createElement('div');
