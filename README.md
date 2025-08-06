@@ -2,11 +2,26 @@
 
 一个基于 RAGFlow 的智能聊天机器人应用，专为 LCD 彩膜制造领域设计的知识问答系统，也可扩展到其他应用场景。
 
+## 目录
+- [项目简介](#项目简介)
+- [功能特性](#功能特性)
+- [演示](#演示)
+- [技术架构](#技术架构)
+  - [后端技术栈](#后端技术栈)
+  - [前端技术栈](#前端技术栈)
+- [项目结构](#项目结构)
+- [环境要求](#环境要求)
+- [安装与部署](#安装与部署)
+  - [方式一：Docker 部署（推荐）](#方式一docker-部署推荐)
+  - [方式二：本地开发部署](#方式二本地开发部署)
+- [使用说明](#使用说明)
+- [API 接口](#api-接口)
+- [贡献指南](#贡献指南)
+- [许可证](#许可证)
 
 ## 项目简介
 
 RAGFlow Chatbot 是一个集成了 RAGFlow 技术的智能问答系统，专注于 LCD 彩膜制造领域的专业知识。该系统能够回答关于工艺诊断、缺陷分析、材料验证和设备优化等方面的问题，为工程师和技术人员提供快速准确的知识支持。
-
 
 ## 功能特性
 
@@ -112,18 +127,39 @@ ragflow-chatbot/
    打开浏览器访问 http://localhost:8000
 
 
+## 演示
+
+以下是我们系统的常见缺陷查询功能演示：
+
+<video width="100%" controls autoplay loop>
+  <source src="frontend/demo/common%20defect.mp4" type="video/mp4">
+  您的浏览器不支持视频标签。
+</video>
+
+## 技术架构
+
+### 后端技术栈
+- FastAPI：高性能 Python Web 框架
+- SQLAlchemy：ORM 数据库工具
+- SQLite：默认数据库存储
+- OpenAI SDK：与 RAGFlow API 交互
+- Docker：容器化部署
+
+### 前端技术栈
+- Vanilla JavaScript：原生 JavaScript 实现
+- HTML5/CSS3：现代化界面设计
+- SSE（Server-Sent Events）：实时流式通信
+- Highlight.js：代码高亮显示
+- Marked.js：Markdown 解析
+
 ## API 接口
 
-### 主要接口
-- `GET /` - 返回前端页面
-- `GET /chat` - 聊天接口
-- `GET /history` - 获取对话历史
-- `POST /history` - 保存对话
-- `GET /history/{session_id}` - 获取特定对话详情
-- `DELETE /history/{session_id}` - 删除特定对话
-- `DELETE /history` - 删除所有对话
-- `GET /export` - 导出所有对话记录
-- `GET /health` - 健康检查
+| 接口 | 方法 | 描述 |
+|------|------|------|
+| `/chat` | POST | 发送聊天消息 |
+| `/history` | GET | 获取聊天历史 |
+| `/history` | POST | 保存聊天记录 |
+| `/history/{session_id}` | DELETE | 删除指定会话 |
 
 
 ### 请求示例
@@ -168,20 +204,6 @@ DATABASE_URL=sqlite:///./chat_history.db
 - timestamp: 时间戳
 
 
-## 开发指南
-
-### 代码结构说明
-- `main.py` - FastAPI 应用主文件，包含所有路由和业务逻辑
-- `models.py` - SQLAlchemy 数据模型定义
-- `crud.py` - 数据库增删改查操作
-- `rag_client.py` - RAGFlow 客户端封装
-- `frontend/` - 前端静态资源文件
-
-### 添加新功能
-1. 在 `main.py` 中添加新的路由和处理函数
-2. 如需数据库操作，在 `models.py` 中添加新模型或修改现有模型
-3. 在 `crud.py` 中添加相应的数据库操作函数
-4. 前端界面修改在 `frontend/` 目录下进行
 
 
 ## 故障排除
