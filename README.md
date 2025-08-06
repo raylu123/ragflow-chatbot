@@ -34,6 +34,18 @@ RAGFlow Chatbot 是一个集成了 RAGFlow 技术的智能问答系统，专注�
 - 🌐 响应式设计，支持移动端
 - 🌙 深色主题支持
 
+## 演示
+
+以下是我们系统的界面展示：
+
+![系统演示](frontend/demo/demo.png)
+
+以下是我们系统的常见缺陷查询功能演示：
+
+<video width="100%" controls autoplay loop>
+  <source src="frontend/demo/common%20defect.mp4" type="video/mp4">
+  您的浏览器不支持视频标签。
+</video>
 
 ## 技术架构
 
@@ -126,31 +138,6 @@ ragflow-chatbot/
 4. 访问应用：  
    打开浏览器访问 http://localhost:8000
 
-
-## 演示
-
-以下是我们系统的常见缺陷查询功能演示：
-
-<video width="100%" controls autoplay loop>
-  <source src="frontend/demo/common%20defect.mp4" type="video/mp4">
-  您的浏览器不支持视频标签。
-</video>
-
-## 技术架构
-
-### 后端技术栈
-- FastAPI：高性能 Python Web 框架
-- SQLAlchemy：ORM 数据库工具
-- SQLite：默认数据库存储
-- OpenAI SDK：与 RAGFlow API 交互
-- Docker：容器化部署
-
-### 前端技术栈
-- Vanilla JavaScript：原生 JavaScript 实现
-- HTML5/CSS3：现代化界面设计
-- SSE（Server-Sent Events）：实时流式通信
-- Highlight.js：代码高亮显示
-- Marked.js：Markdown 解析
 
 ## API 接口
 
