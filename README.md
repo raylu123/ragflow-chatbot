@@ -43,7 +43,7 @@ RAGFlow Chatbot 是一个集成了 RAGFlow 技术的智能问答系统，专注�
 以下是我们系统的常见缺陷查询功能演示：
 
 <video width="100%" controls autoplay loop>
-  <source src="frontend/demo/common%20defect.mp4" type="video/mp4">
+  <source src="https://github.com/raylu123/ragflow-chatbot/blob/main/frontend/demo/common%20defect.mp4" type="video/mp4">
   您的浏览器不支持视频标签。
 </video>
 
